@@ -1,0 +1,2 @@
+# nothing so far, might add things in the future
+# install with `pip install -t lib -r requirements.txt`

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <!-- Material Design Lite -->
+    <script src="https://code.getmdl.io/1.3.0/material.min.js"></script>
+    <link rel="stylesheet" href="https://code.getmdl.io/1.3.0/material.indigo-pink.min.css">
+    <!-- Material Design icon font -->
+    <link rel="stylesheet" href="https://fonts.googleapis.com/icon?family=Material+Icons">
+  </head>
+  <body>
+    <!-- Always shows a header, even in smaller screens. -->
+    <div class="mdl-layout mdl-js-layout mdl-layout--fixed-header">
+      <header class="mdl-layout__header">
+        <div class="mdl-layout__header-row">
+          <!-- Title -->
+          <span class="mdl-layout-title">go/ links</span>
+          <!-- Add spacer, to align navigation to the right -->
+          <div class="mdl-layout-spacer"></div>
+          <!-- Navigation. We hide it in small screens. -->
+          <nav class="mdl-navigation mdl-layout--large-screen-only">
+	    {% if is_admin %}
+            <a class="mdl-navigation__link" href="/links/all">All Links</a>
+	    {% endif %}
+            <a class="mdl-navigation__link" href="/links/my">My Links</a>
+            <a class="mdl-navigation__link" href="/edit/">Create Link</a>
+	    <a class="mdl-navigation__link" href="{{ sign_out_link }}">Sign Out</a>
+          </nav>
+        </div>
+      </header>
+      <div class="mdl-layout__drawer">
+        <span class="mdl-layout-title">go/ links</span>
+        <nav class="mdl-navigation">
+	  {% if is_admin %}
+          <a class="mdl-navigation__link" href="/links/all">All Links</a>
+	  {% endif %}
+          <a class="mdl-navigation__link" href="/links/my">My Links</a>
+          <a class="mdl-navigation__link" href="/edit/">Create Link</a>
+	  <a class="mdl-navigation__link" href="{{ sign_out_link }}">Sign Out</a>
+        </nav>
+      </div>
+      <main class="mdl-layout__content">
+      {% block content %}
+      {% endblock %}
+      </main>
+    </div>
+  </body>
+</html>
