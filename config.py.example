@@ -4,4 +4,6 @@ GOLINKS_FQDN = "go.corp.munpanel.com"
 URL_ALLOWED_SCHEMAS = ['http', 'https', 'mailto', 'ftp']
 ENABLE_GOOGLE_GROUPS_INTEGRATION = True
 USE_APP_ENGINE_SERVICE_ACCOUNT  = True
+USE_MEMCACHE = True
+MEMCACHE_TTL = 3600
 GSUITE_DIRECTORY_ADMIN_USER = "admin@munpanel.com"

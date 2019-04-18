@@ -1,6 +1,6 @@
 from google.appengine.ext.webapp.template import render
 from google.appengine.ext import ndb
-from google.appengine.api import users
+from google.appengine.api import users, memcache
 from googleapiclient.errors import HttpError
 from urlparse import urlparse
 import webapp2
@@ -175,25 +175,30 @@ class RedirectLink(webapp2.RequestHandler):
             return
           if l.visibility:
             if config.ENABLE_GOOGLE_GROUPS_INTEGRATION:
-              groups = map(lambda x: x.strip(), l.visibility.split(';'))
-              no_access = True
-              for group in groups:
-                if group:
-                  try:
-                    # NOTES: this does support nested group members but doesn't support external users
-                    # even though we don't currently allow external users to log in, but this is worth noting if we decide to support
-                    # See b/109861216 and https://github.com/googleapis/google-api-go-client/issues/350
-                    if gsuite.directory_service.members().hasMember(
-                        groupKey=group,
-                        memberKey=user.email()).execute()['isMember']:
-                      no_access = False
-                      break
-                  except HttpError:
-                    pass
-              if no_access:
-                errorPage(self.response, 403,
-                          "You do not have access to the requested resource")
-                return
+              memcacheKey = "v_%s_%s" % (user.user_id(), link)
+              if not config.USE_MEMCACHE or not memcache.get(memcacheKey):
+                groups = map(lambda x: x.strip(), l.visibility.split(';'))
+                no_access = True
+                for group in groups:
+                  if group:
+                    try:
+                      # NOTES: this does support nested group members but doesn't support external users
+                      # even though we don't currently allow external users to log in, but this is worth noting if we decide to support
+                      # See b/109861216 and https://github.com/googleapis/google-api-go-client/issues/350
+                      if gsuite.directory_service.members().hasMember(
+                          groupKey=group,
+                          memberKey=user.email()).execute()['isMember']:
+                        no_access = False
+                        break
+                    except HttpError:
+                      pass
+                if no_access:
+                  # no caching for 403 so that user can gain access immediately
+                  errorPage(self.response, 403,
+                            "You do not have access to the requested resource")
+                  return
+              if config.USE_MEMCACHE:
+                memcache.set(memcacheKey, 1, config.MEMCACHE_TTL)
         l.viewcount += 1
         l.put()
         self.redirect(str(l.url))
