@@ -10,4 +10,3 @@ google.__path__ = [os.path.join(lib_directory, 'google')] + google.__path__
 
 # Add any libraries install in the "lib" folder.
 vendor.add(lib_directory)
-
