@@ -3,6 +3,7 @@ from google.appengine.ext import ndb
 from google.appengine.api import users, memcache
 from googleapiclient.errors import HttpError
 from urlparse import urlparse
+import logging
 import webapp2
 import config
 import gsuite
@@ -64,9 +65,12 @@ class DeleteLink(webapp2.RequestHandler):
     l = Link.get_by_id(key)
     if l.owner_id:
       if l.owner_id != user.user_id() and not users.is_current_user_admin():
+        logging.info("%s tried to delete /%s but doesn't have permission" %
+                     (user.email(), key))
         errorPage(self.response, 403, "Access denied")
         return
     l.key.delete()
+    logging.info("%s deleted /%s" % (user.email(), key))
     self.redirect("/links/my")
 
 
@@ -87,23 +91,32 @@ class EditLink(webapp2.RequestHandler):
     blacklist = ["edit", "links", "delete"]
     for word in blacklist:
       if key.startswith(word + '/') or key == word:
+        logging.info("%s tried to add forbidden URL /%s" % (user.email(), key))
         errorPage(self.response, 400, "Shortened URL forbidden")
         return
     if link:
       if key != link:
+        logging.info(
+            "%s tried to change /%s to %s but such request is forbidden" %
+            (user.email(), link, key))
         errorPage(self.response, 400, "Cannot change shortened URL")
         return
     if not isValidUrl(url):
+      logging.info("%s tried to set /%s to illegal URL: %s" %
+                   (user.email(), key, url))
       errorPage(self.response, 400, "URL Illegal")
       return
     l = Link.get_or_insert(key)
     if l.owner_id:
       if not link:
+        logging.info("%s tried to overwrite /%s" % (user.email(), key))
         errorPage(
             self.response, 500,
             "Link already exists... Please update existing one or change url.")
         return
       if l.owner_id != user.user_id() and not users.is_current_user_admin():
+        logging.info("%s tried to modify /%s but doesn't have permission" %
+                     (user.email(), key))
         errorPage(self.response, 403, "Access denied")
         return
     else:
@@ -114,8 +127,11 @@ class EditLink(webapp2.RequestHandler):
       for group in groups:
         if group:
           try:
+            logging.info("Checking if %s is a valid group" % group)
             gsuite.directory_service.groups().get(groupKey=group).execute()
           except HttpError:
+            logging.info("%s tried to add invalid group %s to /%s" %
+                         (user.email(), group, key))
             errorPage(self.response, 400, "Invalid group: " + group)
             return
       l.visibility = visibility
@@ -127,6 +143,7 @@ class EditLink(webapp2.RequestHandler):
     if not l.viewcount:
       l.viewcount = 0
     l.put()
+    logging.info("%s created or updated /%s to %s" % (user.email(), key, url))
     self.redirect("/edit/" + key)
 
   def get(self, link):
@@ -149,6 +166,9 @@ class EditLink(webapp2.RequestHandler):
       if l:
         if l.owner_id:
           if l.owner_id != user.user_id() and not is_admin:
+            logging.info(
+                "%s tried to check details page of /%s but doesn't have permission"
+                % (user.email(), link))
             errorPage(self.response, 403, "Access denied")
             return
         context.update({
@@ -159,6 +179,7 @@ class EditLink(webapp2.RequestHandler):
             'can_delete': 1,
             'owner': l.owner_name
         })
+    logging.info("%s checked details page of /%s" % (user.email(), link))
     self.response.write(render("template/edit.html", context))
 
 
@@ -167,9 +188,13 @@ class RedirectLink(webapp2.RequestHandler):
   def get(self, link):
     user = users.get_current_user()
     if link:
-      l = Link.get_by_id(link.rstrip("/"))
+      link = link.rstrip("/")
+      l = Link.get_by_id(link)
       if l:
-        if not l.public:
+        if l.public:
+          username = "public-user"
+        else:
+          username = user.email()
           if not user:
             self.redirect(users.create_login_url(self.request.path))
             return
@@ -185,6 +210,8 @@ class RedirectLink(webapp2.RequestHandler):
                       # NOTES: this does support nested group members but doesn't support external users
                       # even though we don't currently allow external users to log in, but this is worth noting if we decide to support
                       # See b/109861216 and https://github.com/googleapis/google-api-go-client/issues/350
+                      logging.info("Checking if %s is a member of %s" %
+                                   (username, group))
                       if gsuite.directory_service.members().hasMember(
                           groupKey=group,
                           memberKey=user.email()).execute()['isMember']:
@@ -194,13 +221,20 @@ class RedirectLink(webapp2.RequestHandler):
                       pass
                 if no_access:
                   # no caching for 403 so that user can gain access immediately
+                  logging.info(
+                      "%s tried to access /%s but failed visibilitty check" %
+                      (username, link))
                   errorPage(self.response, 403,
                             "You do not have access to the requested resource")
                   return
-              if config.USE_MEMCACHE:
-                memcache.set(memcacheKey, 1, config.MEMCACHE_TTL)
+                if config.USE_MEMCACHE:
+                  memcache.set(memcacheKey, 1, config.MEMCACHE_TTL)
+              else:
+                logging.info("%s has access to /%s by cache" % (username, link))
         l.viewcount += 1
         l.put()
+        logging.info("%s accessed /%s and redirected to %s" %
+                     (username, link, str(l.url)))
         self.redirect(str(l.url))
         return
     if not user:  # we don't want external to know if url exists
@@ -209,6 +243,7 @@ class RedirectLink(webapp2.RequestHandler):
     if not link:
       self.redirect('/links/my')
       return
+    logging.info("%s accessed non-existent URL /%s" % (user.email(), link))
     errorPage(self.response, 404, "Not Found!")
 
 
