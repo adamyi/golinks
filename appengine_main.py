@@ -67,15 +67,18 @@ class EditLink(webapp2.RequestHandler):
         if not key:
             errorPage(self.response, 400, "Shortened URL required")
             return
-        if key.startswith("edit/") or key == "edit":
-            errorPage(self.response, 400, "Shortened URL forbidden")
-            return
+        blacklist = ["edit", "links", "delete"]
+        for word in blacklist:
+            if key.startswith(word + '/') or key == word:
+                errorPage(self.response, 400, "Shortened URL forbidden")
+                return
         if link:
             if key != link:
                 errorPage(self.response, 400, "Cannot change shortened URL")
                 return
         if not isValidUrl(url):
             errorPage(self.response, 400, "URL Illegal")
+            return
         l = Link.get_or_insert(key)
         if l.owner_id:
             if not link:
