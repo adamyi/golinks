@@ -14,8 +14,8 @@
   <tbody>
 	  {% for link in links %}
     <tr>
-	    <th class="mdl-data-table__cell--non-numeric"><a href="/{{ link.key.id }}" target="_blank" >go/{{ link.key.id }}</a></th>
-	    <th><a href="/{{ link.key.id }}" target="_blank" >{{ link.url }}</a></th>
+	    <th class="mdl-data-table__cell--non-numeric"><a href="//{{ fqdn }}/{{ link.key.id }}" target="_blank" >{{ hostname }}/{{ link.key.id }}</a></th>
+	    <th><a href="//{{ fqdn }}/{{ link.key.id }}" target="_blank" >{{ link.url }}</a></th>
 	    <th>{{ link.viewcount }}</th>
 	    <th>{{ link.owner_name }}</th>
 	    <th><a href="/edit/{{ link.key.id }}"><i class="material-icons">edit</i></a></th>

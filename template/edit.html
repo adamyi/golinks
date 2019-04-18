@@ -9,7 +9,7 @@
               </div>
               <div class="mdl-card__supporting-text">
 		      {% if viewcount >= 0 %}
-		      View Count: {{ viewcount }}
+		      View Count: {{ viewcount }}<br>
 		      {% endif %}
 		      {% if owner %}
 		      Owner: {{ owner }}
@@ -23,7 +23,7 @@
                 <h2 class="mdl-card__title-text">Basic Properties</h2>
               </div>
               <div class="mdl-card__supporting-text">
-                Shortened link: go/
+                Shortened link: {{ hostname }}/
                 <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
 			<input class="mdl-textfield__input" type="text" id="key" name="key" value="{{ key }}" {% if key %}readonly{% endif %}>
                   <label class="mdl-textfield__label" for="key">code-review</label>
@@ -31,7 +31,7 @@
                 Original link:
                 <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
 			<input class="mdl-textfield__input" type="text" id="url" name="url" value="{{ url }}">
-                  <label class="mdl-textfield__label" for="url">https://git.yiad.am/review/</label>
+                  <label class="mdl-textfield__label" for="url">http://example.com</label>
                 </div>
               </div>
             </section>
@@ -41,12 +41,24 @@
                 <h2 class="mdl-card__title-text">Permission Settings</h2>
               </div>
               <div class="mdl-card__supporting-text">
-                <p>We currently only support private and public urls. Private urls can be accessed by anyone with a corp account, and public urls do NOT require SSO.</p>
+                <p>Public urls do <b>NOT</b> require corp account login.</p>
                 <label class="mdl-checkbox mdl-js-checkbox mdl-js-ripple-effect" for="public-access">
-			<input type="checkbox" id="public-access" class="mdl-checkbox__input" name="public" {% if public %}checked{% endif %}>
-  <span class="mdl-checkbox__label">Public Access</span>
-</label>
-                <p>Other features like domain settings and advanced internal permission settings (Groups check) will be added in the future.</p>
+                  <input type="checkbox" id="public-access" class="mdl-checkbox__input" name="public" {% if public %}checked{% endif %} {% if show_visibility %} onclick="toggleVisibility()"{% endif %}>
+                  <span class="mdl-checkbox__label">Public Access</span>
+                </label>
+                {% if show_visibility %}
+                <div id="visibility_div">
+                  <br>Visibility:
+                  <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
+                    <input class="mdl-textfield__input" type="text" id="visibility" name="visibility" value="{{ visibility }}">
+                    <label class="mdl-textfield__label" for="visibility">Google Groups, separated with ;</label>
+                  </div>
+                  <p>Only members (including nested members) of at least one of the designated Google Groups can access.</p>
+                  <p>Only corp Google Groups are supported (@googlegroups.com is not supported).</p>
+                  <p>If empty, all users with a valid corp account can access.</p>
+                  <p>This setting only applies when link is not public.</p>
+                </div>
+                {% endif %}
               </div>
             </section>
         <p></p>

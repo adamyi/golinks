@@ -8,18 +8,11 @@
     html{background:#fff;color:#222;padding:15px}
     *{margin:0;padding:0}
     p{margin:22px 0 0;}
-    ins{color:#777;text-decoration:none;}
-    img{border:0;vertical-align:middle;}
-    #pg{text-align:center;margin:-0.65em 0 2em 0;}
-    #google{border:0;vertical-align:middle;margin-bottom:0.65em}
-    #g{color:#777}
-    a.button { background-color: buttonface; border: 2px outset buttonface; color: buttontext; padding: 1px 6px; text-decoration: none; -webkit-appearance: push-button; }
-    a.button:active { border: 2px inset buttonface; }
   </style>
 </head>
 <body>
   <p>
-    <span style="font-size: 200%;color:black">MUNPANEL Corp</span>
+    <span style="font-size: 200%;color:black">{{ corpname }} Corp</span>
   </p>
   <p><b>Error.</b> {{ message }}</p>
   <p>Therefore we served HTTP status code {{ code }}.</p>
