@@ -1,6 +1,7 @@
 {% extends "layout.html" %}
 {% block content %}
       <form method="post">
+        <input type="hidden" name="xsrf" value="{{ ''|xsrf_token }}">
         <p></p>
 	{% if viewcount >= 0 or owner %}
         <section class="mdl-card mdl-cell mdl-cell--4-col mdl-shadow--4dp" style="margin: auto; min-height: 30px;">
@@ -66,12 +67,17 @@
               <div class="mdl-card__title mdl-color--amber mdl-color-text--grey-50">
                 <h2 class="mdl-card__title-text">Confirmation</h2>
               </div>
+	    </form>
 	      <div class="mdl-card__supporting-text"><center>
 		      <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--colored">Save</button>
 		      {% if can_delete %}
-		      <a href="/delete/{{ key }}" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Delete</a>
+          {% with "/delete/"|add:key as delete_action %}
+          <form action="{{ delete_action }}" method="post" style="display: inline;">
+            <input type="hidden" name="xsrf" value="{{ delete_action|xsrf_token }}">
+		        <button type="submit" class="mdl-button mdl-js-button mdl-button--raised mdl-js-ripple-effect mdl-button--accent">Delete</button>
+          </form>
+          {% endwith %}
 		      {% endif %}
 	      </center></div>
             </section>
-	    </form>
 {% endblock %}

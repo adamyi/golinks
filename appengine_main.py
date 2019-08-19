@@ -1,4 +1,4 @@
-from google.appengine.ext.webapp.template import render
+from google.appengine.ext.webapp.template import render, register_template_library
 from google.appengine.ext import ndb
 from google.appengine.api import users, memcache
 from googleapiclient.errors import HttpError
@@ -8,6 +8,9 @@ import webapp2
 import config
 import gsuite
 
+from third_party import xsrfutil
+
+register_template_library('third_party.xsrfutil')
 
 class Link(ndb.Model):
   url = ndb.StringProperty()
@@ -26,9 +29,7 @@ def errorPage(response, code, message):
 
 def isValidUrl(url):
   o = urlparse(url)
-  if o.scheme in config.URL_ALLOWED_SCHEMAS:
-    return 1
-  return 0
+  return o.scheme in config.URL_ALLOWED_SCHEMAS
 
 
 class ShowLinks(webapp2.RequestHandler):
@@ -56,7 +57,8 @@ class ShowLinks(webapp2.RequestHandler):
 
 class DeleteLink(webapp2.RequestHandler):
 
-  def get(self, link):
+  @xsrfutil.xsrf_protect
+  def post(self, link):
     user = users.get_current_user()
     if not user:
       self.redirect(users.create_login_url(self.request.path))
@@ -76,6 +78,7 @@ class DeleteLink(webapp2.RequestHandler):
 
 class EditLink(webapp2.RequestHandler):
 
+  @xsrfutil.xsrf_protect
   def post(self, link):
     user = users.get_current_user()
     if not user:
@@ -194,10 +197,10 @@ class RedirectLink(webapp2.RequestHandler):
         if l.public:
           username = "public-user"
         else:
-          username = user.email()
           if not user:
             self.redirect(users.create_login_url(self.request.path))
             return
+          username = user.email()
           if l.visibility:
             if config.ENABLE_GOOGLE_GROUPS_INTEGRATION:
               memcacheKey = "v_%s_%s" % (user.user_id(), link)
@@ -208,8 +211,8 @@ class RedirectLink(webapp2.RequestHandler):
                   if group:
                     try:
                       # NOTES: this does support nested group members but doesn't support external users
-                      # even though we don't currently allow external users to log in, but this is worth noting if we decide to support
-                      # See b/109861216 and https://github.com/googleapis/google-api-go-client/issues/350
+                      # even though we don't currently allow external users to log in, but this is worth
+                      # noting if we decide to support
                       logging.info("Checking if %s is a member of %s" %
                                    (username, group))
                       if gsuite.directory_service.members().hasMember(
@@ -246,11 +249,10 @@ class RedirectLink(webapp2.RequestHandler):
     logging.info("%s accessed non-existent URL /%s" % (user.email(), link))
     errorPage(self.response, 404, "Not Found!")
 
-
 app = webapp2.WSGIApplication([
     ('/edit/([-\/\w]*)', EditLink),
     ('/delete/([-\/\w]+)', DeleteLink),
     ('/links/(\w*)', ShowLinks),
     ('/([-\/\w]*)', RedirectLink),
-],
-                              debug=True)
+], debug=True)
+
