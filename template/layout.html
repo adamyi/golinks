@@ -19,24 +19,24 @@
           <div class="mdl-layout-spacer"></div>
           <!-- Navigation. We hide it in small screens. -->
           <nav class="mdl-navigation mdl-layout--large-screen-only">
-	    {% if is_admin %}
+        {% if is_admin %}
             <a class="mdl-navigation__link" href="/links/all">All Links</a>
-	    {% endif %}
+        {% endif %}
             <a class="mdl-navigation__link" href="/links/my">My Links</a>
             <a class="mdl-navigation__link" href="/edit/">Create Link</a>
-	    <a class="mdl-navigation__link" href="{{ sign_out_link }}">Sign Out</a>
+        <a class="mdl-navigation__link" href="{{ sign_out_link }}">Sign Out</a>
           </nav>
         </div>
       </header>
       <div class="mdl-layout__drawer">
         <span class="mdl-layout-title">go/ links</span>
         <nav class="mdl-navigation">
-	  {% if is_admin %}
+      {% if is_admin %}
           <a class="mdl-navigation__link" href="/links/all">All Links</a>
-	  {% endif %}
+      {% endif %}
           <a class="mdl-navigation__link" href="/links/my">My Links</a>
           <a class="mdl-navigation__link" href="/edit/">Create Link</a>
-	  <a class="mdl-navigation__link" href="{{ sign_out_link }}">Sign Out</a>
+      <a class="mdl-navigation__link" href="{{ sign_out_link }}">Sign Out</a>
         </nav>
       </div>
       <main class="mdl-layout__content">

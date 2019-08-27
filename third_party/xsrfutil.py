@@ -13,15 +13,13 @@
 # WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
 # See the License for the specific language governing permissions and
 # limitations under the License.
-
 """Helper methods for creating & verifying XSRF tokens for AppEngine."""
 
 __authors__ = [
-  '"Doug Coker" <dcoker@google.com>',
-  '"Joe Gregorio" <jcgregorio@google.com>',
-  'dfa@websec.at',
+    '"Doug Coker" <dcoker@google.com>',
+    '"Joe Gregorio" <jcgregorio@google.com>',
+    'dfa@websec.at',
 ]
-
 
 import base64
 import binascii
@@ -42,7 +40,8 @@ ANONYMOUS_USER = 'anonymous'
 DELIMITER = ':'
 
 # 24 hours in seconds
-DEFAULT_TIMEOUT_SECS = 1*60*60*24
+DEFAULT_TIMEOUT_SECS = 1 * 60 * 60 * 24
+
 
 def generate_token(key, user_id, path="", when=None):
   """Generates a URL-safe token for the given user, action, time tuple.
@@ -66,13 +65,15 @@ def generate_token(key, user_id, path="", when=None):
   digester.update(str(when))
   digest = digester.digest()
 
-  token = base64.urlsafe_b64encode('%s%s%d' % (digest,
-                                               DELIMITER,
-                                               when))
+  token = base64.urlsafe_b64encode('%s%s%d' % (digest, DELIMITER, when))
   return token
 
 
-def validate_token(key, token, user_id, path="", current_time=None,
+def validate_token(key,
+                   token,
+                   user_id,
+                   path="",
+                   current_time=None,
                    timeout=DEFAULT_TIMEOUT_SECS):
   """Validates that the given token authorizes the user for the action.
 
@@ -132,6 +133,7 @@ def xsrf_protect(func):
   If no token or an invalid token is received, the decorated function is not
   called and a 403 error will be issued.
   """
+
   def decorate(self, *args, **kwargs):
     path = os.environ.get('PATH_INFO', '/')
     token = self.request.get('xsrf', None)
@@ -195,6 +197,7 @@ class XsrfSecret(db.Model):
       memcache.set('xsrf_secret', secret)
 
     return secret
+
 
 register = webapp.template.create_template_register()
 register.filter(xsrf_token)
