@@ -69,9 +69,10 @@ Group have access.
 To set up Google Groups Integration, follow the following steps:
 1. Turn on `ENABLE_GOOGLE_GROUPS_INTEGRATION` in `config.py` and set `GSUITE_DIRECTORY_ADMIN_USER`
 to a G Suite admin user in your domain.
-2. Set `USE_APP_ENGINE_SERVICE_ACCOUNT` to `True` and go to
-[Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) settings for your
-GCP project; enable `G Suite Domain-wide Delegation` in your `App Engine default service account`
+2. Go to [Service Accounts](https://console.cloud.google.com/iam-admin/serviceaccounts) settings for your
+GCP project and create a new service account (you don't need to grant any GCP project or user access to
+the service account); enable `G Suite Domain-wide Delegation` for it. Download json format
+key and put it as `credentials.json` in your GAE project root.
 3. Go to [G Suite Admin](https://admin.google.com), select `Security`, `Advanced Setttings`,
 `Manage API Access`
 4. Authorize a new access, set `Client Name` to the `Client ID` under `G Suite Domain-wide
@@ -79,10 +80,6 @@ Delegation`, set scope to
 `https://www.googleapis.com/auth/admin.directory.group.readonly, https://www.googleapis.com/auth/admin.directory.group.member.readonly `
 5. Go to [GCP API Library](https://console.cloud.google.com/apis/api/admin.googleapis.com/overview) and enable
 `Admin SDK` API for your GCP project.
-
-Advanced usage: alternatively, you can also set `USE_APP_ENGINE_SERVICE_ACCOUNT` to `False` and
-put your service account key (json format) in `credentials.json` to use custom service account
-instead of the GAE default one.
 
 ## Contributing
 Contribution is welcome! Feel free to send pull requests ^_^

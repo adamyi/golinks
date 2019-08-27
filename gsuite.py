@@ -1,6 +1,6 @@
 from googleapiclient.discovery import build
-from oauth2client.service_account import ServiceAccountCredentials
-from google.auth import app_engine
+#from google.auth import app_engine
+from google.oauth2 import service_account
 import config
 
 
@@ -14,18 +14,18 @@ def create_directory_service(user_email):
       Admin SDK directory service object.
     """
 
-  if config.USE_APP_ENGINE_SERVICE_ACCOUNT:
-    credentials = app_engine.Credentials()
-  else:
-    credentials = ServiceAccountCredentials.from_json_keyfile_name(
-        "credentials.json",
-        scopes=[
-            'https://www.googleapis.com/auth/admin.directory.group.member.readonly',
-            'https://www.googleapis.com/auth/admin.directory.group.readonly'
-        ])
+  scopes = [
+      'https://www.googleapis.com/auth/admin.directory.group.member.readonly',
+      'https://www.googleapis.com/auth/admin.directory.group.readonly'
+  ]
 
-  credentials = credentials.create_delegated(user_email)
+  #if config.USE_APP_ENGINE_SERVICE_ACCOUNT:
+  #  credentials = app_engine.Credentials()
+  #else:
+  sa_credentials = service_account.Credentials.from_service_account_file(
+      "credentials.json", scopes=scopes)
 
+  credentials = sa_credentials.with_subject(user_email)
   return build('admin', 'directory_v1', credentials=credentials)
 
 

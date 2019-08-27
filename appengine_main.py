@@ -12,6 +12,7 @@ from third_party import xsrfutil
 
 register_template_library('third_party.xsrfutil')
 
+
 class Link(ndb.Model):
   url = ndb.StringProperty()
   owner_id = ndb.StringProperty()
@@ -211,7 +212,7 @@ class RedirectLink(webapp2.RequestHandler):
                   if group:
                     try:
                       # NOTES: this does support nested group members but doesn't support external users
-                      # even though we don't currently allow external users to log in, but this is worth
+                      # even though we don't currently allow external users to log in, this is worth
                       # noting if we decide to support
                       logging.info("Checking if %s is a member of %s" %
                                    (username, group))
@@ -249,10 +250,11 @@ class RedirectLink(webapp2.RequestHandler):
     logging.info("%s accessed non-existent URL /%s" % (user.email(), link))
     errorPage(self.response, 404, "Not Found!")
 
+
 app = webapp2.WSGIApplication([
     ('/edit/([-\/\w]*)', EditLink),
     ('/delete/([-\/\w]+)', DeleteLink),
     ('/links/(\w*)', ShowLinks),
     ('/([-\/\w]*)', RedirectLink),
-], debug=True)
-
+],
+                              debug=True)

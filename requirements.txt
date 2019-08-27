@@ -2,4 +2,3 @@
 # install with `pip install -t lib -r requirements.txt`
 google-auth
 google-api-python-client
-oauth2client
