@@ -28,6 +28,17 @@ def errorPage(response, code, message):
   response.set_status(code)
 
 
+def check_redirect(func):
+
+  def decorate(self, *args, **kwargs):
+    if config.ALWAYS_REDIRECT_TO_FQDN and self.request.host != config.GOLINKS_FQDN:
+      url = self.request.url.replace(self.request.host, config.GOLINKS_FQDN, 1)
+      return self.redirect(url)
+    return func(self, *args, **kwargs)
+
+  return decorate
+
+
 def isValidUrl(url):
   o = urlparse(url)
   return o.scheme in config.URL_ALLOWED_SCHEMAS
@@ -35,6 +46,7 @@ def isValidUrl(url):
 
 class ShowLinks(webapp2.RequestHandler):
 
+  @check_redirect
   def get(self, param):
     user = users.get_current_user()
     if not user:
@@ -58,6 +70,7 @@ class ShowLinks(webapp2.RequestHandler):
 
 class DeleteLink(webapp2.RequestHandler):
 
+  @check_redirect
   @xsrfutil.xsrf_protect
   def post(self, link):
     user = users.get_current_user()
@@ -79,6 +92,7 @@ class DeleteLink(webapp2.RequestHandler):
 
 class EditLink(webapp2.RequestHandler):
 
+  @check_redirect
   @xsrfutil.xsrf_protect
   def post(self, link):
     user = users.get_current_user()
@@ -150,6 +164,7 @@ class EditLink(webapp2.RequestHandler):
     logging.info("%s created or updated /%s to %s" % (user.email(), key, url))
     self.redirect("/edit/" + key)
 
+  @check_redirect
   def get(self, link):
     user = users.get_current_user()
     if not user:
@@ -189,6 +204,7 @@ class EditLink(webapp2.RequestHandler):
 
 class RedirectLink(webapp2.RequestHandler):
 
+  @check_redirect
   def get(self, link):
     user = users.get_current_user()
     if link:

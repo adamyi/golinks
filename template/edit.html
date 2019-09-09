@@ -48,7 +48,7 @@
                   <span class="mdl-checkbox__label">Public Access</span>
                 </label>
                 {% if show_visibility %}
-                <div id="visibility_div">
+                <div id="visibility_div" {% if public %}style="display: none;"{% endif %}>
                   <br>Visibility:
                   <div class="mdl-textfield mdl-js-textfield mdl-cell mdl-cell--12-col">
                     <input class="mdl-textfield__input" type="text" id="visibility" name="visibility" value="{{ visibility }}">
